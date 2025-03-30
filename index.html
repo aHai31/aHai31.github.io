@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>阿海的个人主页</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+
+        /* 导航栏样式 */
+        .navbar {
+            background-color: #2c3e50;
+            padding: 1rem 2rem;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar-title {
+            color: #ecf0f1;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-tab {
+            color: #bdc3c7;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .nav-tab.active {
+            color: #3498db;
+            border-bottom: 2px solid #3498db;
+        }
+
+        /* 内容区域 */
+        .content {
+            margin-top: 80px;
+            padding: 2rem;
+            min-height: calc(100vh - 120px);
+        }
+
+        /* 公共卡片样式 */
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* 首页样式 */
+        #home {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .profile-section {
+            text-align: center;
+        }
+
+        /* 文章列表 */
+        .article-list {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .article-item {
+            padding: 1rem;
+            border-left: 4px solid #3498db;
+            transition: transform 0.2s;
+        }
+
+        .article-item:hover {
+            transform: translateX(5px);
+        }
+
+        /* 标签样式 */
+        .tags {
+            margin-top: 1rem;
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            background: #f1f2f6;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-title">阿海的个人主页</div>
+        <div class="nav-tabs">
+            <div class="nav-tab active" onclick="showTab('home')">首页</div>
+            <div class="nav-tab" onclick="showTab('essays')">随笔</div>
+            <div class="nav-tab" onclick="showTab('sharing')">学习分享</div>
+        </div>
+    </nav>
+
+    <div class="content">
+        <!-- 首页 -->
+        <div id="home" class="tab-content active">
+            <div class="card profile-section">
+                <h2>关于我</h2>
+                <p>全栈开发者 | 技术爱好者</p>
+                <div class="contact-info">
+                    <p>📧 email@example.com</p>
+                    <p>📱 +86 138-XXXX-XXXX</p>
+                </div>
+            </div>
+            <div class="card">
+                <h3>技术栈</h3>
+                <ul>
+                    <li>后端：Java/Spring, Node.js</li>
+                    <li>数据库：MySQL, MongoDB</li>
+                    <li>其他：Docker, AWS</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 随笔 -->
+        <div id="essays" class="tab-content">
+            <div class="tags">
+                <span class="tag" onclick="filterByTag('全部')">全部</span>
+                <span class="tag" onclick="filterByTag('生活')">生活</span>
+                <span class="tag" onclick="filterByTag('技术')">技术</span>
+            </div>
+            <div class="article-list" id="essays-list"></div>
+        </div>
+
+        <!-- 学习分享 -->
+        <div id="sharing" class="tab-content">
+            <div class="tags">
+                <span class="tag" onclick="filterByTag('全部')">全部</span>
+                <span class="tag" onclick="filterByTag('Java')">Java</span>
+                <span class="tag" onclick="filterByTag('数据库')">数据库</span>
+            </div>
+            <div class="article-list" id="sharing-list"></div>
+        </div>
+    </div>
+
+    <script>
+        // 文章数据示例
+        const articles = {
+            essays: [
+                { title: "我的编程之路", date: "2024-03-15", tags: ["技术", "成长"], content: "..." },
+                { title: "上海生活日记", date: "2024-02-20", tags: ["生活"], content: "..." }
+            ],
+            sharing: [
+                { title: "Spring Boot最佳实践", date: "2024-03-10", tags: ["Java"], category: "后端" },
+                { title: "MySQL优化指南", date: "2024-03-05", tags: ["数据库"], category: "数据库" }
+            ]
+        };
+
+        // 显示对应标签页
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
+            
+            // 动态加载内容
+            if(tabId === 'essays') loadEssays();
+            if(tabId === 'sharing') loadSharing();
+        }
+
+        // 加载随笔
+        function loadEssays() {
+            const container = document.getElementById('essays-list');
+            container.innerHTML = articles.essays.map(article => `
+                <div class="card article-item">
+                    <h3>${article.title}</h3>
+                    <div class="meta">${article.date} | ${article.tags.join(', ')}</div>
+                    <p>${article.content}</p>
+                </div>
+            `).join('');
+        }
+
+        // 加载学习分享
+        function loadSharing() {
+            const container = document.getElementById('sharing-list');
+            container.innerHTML = articles.sharing.map(article => `
+                <div class="card article-item">
+                    <h3>${article.title}</h3>
+                    <div class="meta">${article.date} | ${article.category} | ${article.tags.join(', ')}</div>
+                    <p>${article.content}</p>
+                </div>
+            `).join('');
+        }
+
+        // 标签过滤功能
+        function filterByTag(tag) {
+            // 实现过滤逻辑
+        }
+
+        // 初始化显示首页
+        showTab('home');
+    </script>
+</body>
+</html>
